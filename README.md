@@ -1,16 +1,22 @@
-*** Boot.dev/AIasistant 
+<h1>Boot.dev/AIassistant </h1>
 
-to run (once):
+<h3>To run:</h3>
+Create venv
+
 ```bash
     uv venv
-    uv add google-genai==1.12.1
-    uv add python-dotenv==1.1.0
 ```
 
+activate venv
 ```bash
     source .venv/bin/activate
 ```
-
+Install dependencies (once)
+```bash
+    uv add google-genai==1.12.1
+    uv add python-dotenv==1.1.0
+```
+Make request
 ```bash
     uv run main.py <aibot-prompt>
 ```
