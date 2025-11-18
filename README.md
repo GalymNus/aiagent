@@ -1,6 +1,12 @@
 *** Boot.dev/AIasistant 
 
-to run:
+to run (once):
+```bash
+    uv venv
+    uv add google-genai==1.12.1
+    uv add python-dotenv==1.1.0
+```
+
 ```bash
     source .venv/bin/activate
 ```
@@ -11,5 +17,7 @@ to run:
 
 
 Dependencies:
-- Python >= 3.10
-- 
+- Python  `3.10+`
+- UV
+- google-genai==`1.12.1`
+- python-dotenv==`1.1.0`
