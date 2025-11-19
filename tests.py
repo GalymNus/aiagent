@@ -1,6 +1,10 @@
+import os
 import unittest
 
+from functions.get_file_content import get_file_content
 from functions.get_files_info import get_files_info
+from functions.run_python_file import run_python_file
+from functions.write_file import write_file
 
 
 class TestFunctions(unittest.TestCase):
@@ -47,6 +51,189 @@ class TestFunctions(unittest.TestCase):
         expected = [
             "Result for 'folder' directory:",
             "Error: \"folder\" is not a directory"
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_main_content(self):
+        print("----------------------------------------------------------------------")
+        result = get_file_content("calculator", "calculator/main.py")
+        expected = [
+            'Usage: python main.py "<expression>',
+            'to_print = format_json_output(expression, result)',
+            'print("Error: Expression is empty or contains only whitespace.")'
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_calculator_content(self):
+        print("----------------------------------------------------------------------")
+        result = get_file_content("calculator", "calculator/pkg/calculator.py")
+        expected = [
+            'raise ValueError("invalid expression")',
+            'raise ValueError(f"not enough operands for operator {operator}"',
+            'values.append(self.operators[operator](a, b))'
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_bin_content(self):
+        print("----------------------------------------------------------------------")
+        path = "bin"
+        result = get_file_content("calculator", path)
+        expected = [
+            f'Error: Cannot read "{path}" as it is outside the permitted working directory',
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_non_exist_content(self):
+        print("----------------------------------------------------------------------")
+        result = get_file_content(
+            "calculator", "calculator/pkg/does_not_exist.py")
+        expected = [
+            'Error: File not found or is not a regular file:',
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_write_lorem_content(self):
+        print("----------------------------------------------------------------------")
+        content = "wait, this isn't lorem ipsum"
+        path = "calculator/lorem.txt"
+        result = write_file(
+            "calculator", path, content)
+        expected = [
+            f'Successfully wrote to "{path}" ({len(content)} characters written)',
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+        with open(path) as file:
+            file_content = file.read()
+            print("expected:\n", content, f"| in file {path}")
+            self.assertTrue(content in file_content,
+                            f"{content} <= is missing")
+
+    def test_write_morelorem_content(self):
+        print("----------------------------------------------------------------------")
+        content = "lorem ipsum dolor sit amet"
+        path = "calculator/pkg/morelorem.txt"
+        result = write_file(
+            "calculator", path, content)
+        expected = [
+            f'Successfully wrote to "{path}" ({len(content)} characters written)',
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+        with open(path) as file:
+            file_content = file.read()
+            print("expected:\n", content, f"| in file {path}")
+            self.assertTrue(content in file_content,
+                            f"{content} <= is missing")
+
+    def test_write_outside_content(self):
+        print("----------------------------------------------------------------------")
+        content = "lorem ipsum dolor sit amet"
+        path = "/tmp/temp.txt"
+        result = write_file(
+            "calculator", path, content)
+        expected = [
+            f'Error: Cannot write to "{path}" as it is outside the permitted working directory',
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+        exists = os.path.exists(path)
+        self.assertFalse(exists, f"{path} <= should not exist")
+
+    def test_main_run(self):
+        print("----------------------------------------------------------------------")
+        path = "main.py"
+        result = run_python_file(
+            "calculator", path)
+        expected = [
+            f'Calculator App',
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_main_run_with_args(self):
+        print("----------------------------------------------------------------------")
+        path = "main.py"
+        result = run_python_file(
+            "calculator", path, ["3 + 5"])
+        expected = [
+            'expression": "3 + 5"',
+            '"result": 8'
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_tests_run(self):
+        print("----------------------------------------------------------------------")
+        path = "tests.py"
+        result = run_python_file(
+            "calculator", path)
+        expected = [
+            f'Error: File "tests.py" not found.'
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_diff_main_run(self):
+        print("----------------------------------------------------------------------")
+        path = "../main.py"
+        result = run_python_file(
+            "calculator", path)
+        expected = [
+            f'Error: Cannot execute "{path}" as it is outside the permitted working directory'
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_non_existing_run(self):
+        print("----------------------------------------------------------------------")
+        path = "nonexistent.py"
+        result = run_python_file(
+            "calculator", path)
+        expected = [
+            f'Error: File "{path}" not found.'
+        ]
+        print("Result:\n", result)
+        for line in expected:
+            print("expected:\n", line, "| in result")
+            self.assertTrue(line in result, f"{line} <= is missing")
+
+    def test_lorem_run(self):
+        print("----------------------------------------------------------------------")
+        path = "lorem.txt"
+        result = run_python_file(
+            "calculator", path)
+        expected = [
+            f'Error: "{path}" is not a Python file.'
         ]
         print("Result:\n", result)
         for line in expected:
