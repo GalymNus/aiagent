@@ -40,36 +40,45 @@ def main():
             schema_write_file
         ]
     )
-    response = client.models.generate_content(
-        model="gemini-2.0-flash-001",
-        contents=messages,
-        config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt
-                                           ))
-    if (is_verbose):
-        print(f"User prompt: {user_prompt}")
-    print("Response \n", response.text)
-    print("Functions used: \n", )
-    if (response.function_calls is not None):
-        exceptions = []
-        print("response.function_calls", response.function_calls)
-        for func in response.function_calls:
-            print("func", func)
-            func_result = {}
-            try:
-                func_result = call_function(func, is_verbose)
-            except Exception as e:
-                exceptions.append(e)
-            print("func_result", func_result)
+    for i in range(0, 20):
+        try:
+            response = client.models.generate_content(
+                model="gemini-2.0-flash-001",
+                contents=messages,
+                config=types.GenerateContentConfig(tools=[available_functions], system_instruction=system_prompt
+                                                   ))
             if (is_verbose):
-                # print(
-                #     f"-> {func_result.parts[0].function_response.response}")
-                print(f"-> {func_result}")
-            print("exceptions", exceptions)
+                print(f"User prompt: {user_prompt}")
+            print("Response \n", response.text)
+            for candidate in response.candidates:
+                messages.append(candidate.content)
+            if (response.function_calls is not None):
+                exceptions = []
+                for func in response.function_calls:
+                    func_result = {}
+                    try:
+                        func_result = call_function(func, is_verbose)
+                    except Exception as e:
+                        exceptions.append(e)
+                    if (is_verbose):
+                        print(
+                            f"-> {func_result}")
+                        print(f"-> {func_result}")
+                    if ("role" in func_result) and (func_result.role == "user"):
+                        messages.append(types.Content(func_result))
+                    print("AI func run exceptions", exceptions)
 
-    if (is_verbose):
-        print(f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
-        print(
-            f"Response tokens: {response.usage_metadata.candidates_token_count}")
+            if (is_verbose):
+                print(
+                    f"Prompt tokens: {response.usage_metadata.prompt_token_count}")
+                print(
+                    f"Response tokens: {response.usage_metadata.candidates_token_count}")
+            if (response.function_calls is None) and (len(response.text) > 0):
+                print("Final response:\n", response.text)
+                break
+
+        except Exception as e:
+            print(f"Error: exception {e}")
 
 
 if __name__ == "__main__":
